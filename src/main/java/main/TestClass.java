@@ -14,13 +14,17 @@ public class TestClass {
     public static void main(String[] args)
             throws InterruptedException, UnsupportedEncodingException, JsonMappingException, JsonProcessingException {
         DeeplTranslator tr = new DeeplTranslator();
-        String result = tr.translate(" Gson is a Java library that can be used to convert Java Objects into their JSON representation. It can also be used to convert a JSON string to an equivalent Java object. Gson can work with arbitrary Java objects including pre-existing objects that you do not have source-code of.");
+        String result = tr.translate(
+                "<p>The first approach we'll see for converting a JSON <em>String</em> to a <em>JsonObject</em> is a two-step process that uses the <em>JsonParser</em> class.</p>");
         System.out.println("JSON: " + result);
 
         ObjectMapper mapper = new ObjectMapper();
-        DeeplResponse response = mapper.readValue(result, DeeplResponse.class);
+        if (result != null) {
+            DeeplResponse response = mapper.readValue(result, DeeplResponse.class);
 
-        System.out.println("Translated text: " + response.result.translations.get(0).beams.get(0).processedSentence);
+            System.out
+                    .println("Translated text: " + response.result.translations.get(0).beams.get(0).processedSentence);
+        }
     }
 
 }

@@ -1,17 +1,16 @@
 package translator;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.URL;
 import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
 
 public class DeeplTranslator {
 
@@ -29,28 +28,32 @@ public class DeeplTranslator {
 
     public String translate(String text) throws UnsupportedEncodingException {
         String result = null;
-        HttpClient client = new DefaultHttpClient();
-        HttpPost request = new HttpPost(TRANSLATOR_ENDPOINT_URL);
-        request.addHeader("User-Agent", USER_AGENT);
-        request.addHeader("accept", "text/xml");
-        request.addHeader("Content-Type", "ttext/plain");
 
-        String timestamp = "" + (new Date()).getTime();
-        String id = "7580090";
-        String json = String.format(JSON, text, timestamp, id);
-
-        request.setEntity(new StringEntity(json));
         try {
-            HttpResponse response = client.execute(request);
-            if (response.getStatusLine().getStatusCode() == 200) {
+            Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("167.71.186.105", 3128));
+            HttpURLConnection connection = (HttpURLConnection) new URL(TRANSLATOR_ENDPOINT_URL).openConnection(proxy);
+            connection.setDoOutput(true);
+            connection.setDoInput(true);
+            connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection.setRequestProperty("Content-type", "text/plain");
+            connection.setRequestProperty("Accept", "text/xml");
+            connection.setRequestMethod("POST");
 
-                result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+            String timestamp = "" + (new Date()).getTime();
+            String id = "7580002";
+            String json = String.format(JSON, text, timestamp, id);
+            OutputStream outputStream = connection.getOutputStream();
+            outputStream.write(json.getBytes());
+            outputStream.flush();
+            outputStream.close();
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                result = IOUtils.toString(connection.getInputStream(), "UTF-8");
             }
         } catch (ClientProtocolException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return result;
