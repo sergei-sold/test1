@@ -14,6 +14,7 @@ public class TestClass {
     public static void main(String[] args)
             throws InterruptedException, UnsupportedEncodingException, JsonMappingException, JsonProcessingException {
         DeeplTranslator tr = new DeeplTranslator();
+        tr.setPoxy("");
         String result = tr.translate(
                 "<p>The first approach we'll see for converting a JSON <em>String</em> to a <em>JsonObject</em> is a two-step process that uses the <em>JsonParser</em> class.</p>");
         System.out.println("JSON: " + result);
