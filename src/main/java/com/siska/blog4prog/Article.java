@@ -24,12 +24,17 @@ public class Article {
 	private Set<String> categories = new HashSet<>();
 	private Set<String> tags = new HashSet<>();
 	private List<Element> contentNodes = new ArrayList<>();
-	private Document articleDoc;
+
+    private Document articleDoc;
 
 	public Document getArticleDoc() {
 		return articleDoc;
 	}
-
+    
+    public List<Element> getContentNodes() {
+        return contentNodes;
+    }
+    
 	public Article(String title, String href) {
 		this.title = title;
 		this.href = href;
@@ -71,7 +76,7 @@ public class Article {
 		contentNodes.add(element);
 	}
 
-	public void downloadAnfFillContent() {
+	public void downloadAndFillContent() {
 		WebHelper infoWebHelper = new WebHelper();
 		infoWebHelper.get(getHref());
 		articleDoc = Jsoup.parse(infoWebHelper.getResponseBody());

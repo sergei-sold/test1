@@ -12,10 +12,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import translator.DeeplTranslator;
+
 public class BlogApp {
 
 	private static final String BASE_DIR = "e:\\_work\\java\\blog-for-prog\\";
-
+	private static ProxyManager proxyManager = new ProxyManager();
 	public static void main(String[] args) throws IOException {
 
 		List<Article> articles = new ArrayList<>();
@@ -29,8 +31,12 @@ public class BlogApp {
 			sb.append(article.getHref());
 			sb.append("\r\n");
 			// extract Article info
-			article.downloadAnfFillContent();
-
+			article.downloadAndFillContent();
+			article.getContentNodes()
+			    .stream()
+			    .forEach(node -> translateNode(node, article));
+			
+			
 			try {
 				// processArticleHeader(article, articleDoc);
 				// getAndSaveArticleContent(article, article.getArticleDoc());
@@ -51,7 +57,13 @@ public class BlogApp {
 
 	}
 
-	private static void getAllArticles(List<Article> articles, String pageUrl) {
+	private static Object translateNode(Element node, Article article) {
+	    DeeplTranslator translator = new DeeplTranslator();
+	    translator.setPoxy(proxyManager.getNext());
+        return null;
+    }
+
+    private static void getAllArticles(List<Article> articles, String pageUrl) {
 		WebHelper webHelper = new WebHelper();
 		webHelper.get(pageUrl);
 		boolean hasNextPage = true;
@@ -91,7 +103,7 @@ public class BlogApp {
 	private static boolean getNextPageIfExists(WebHelper webHelper, Document doc) {
 		boolean hasNextPage = false;
 		Elements pagination = doc.getElementsByClass("pagination");
-		if (pagination.size() > 0) {
+		if (!pagination.isEmpty()) {
 			Element paginationElem = pagination.get(0);
 			Elements pages = paginationElem.getElementsByTag("a");
 			for (Element page : pages) {
