@@ -4,20 +4,24 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jsoup.Jsoup;
+import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import translator.DeeplTranslator;
+import com.siska.blog4prog.translator.DeeplTranslator;
+import com.siska.blog4prog.translator.ProxyManager;
 
 public class BlogApp {
 
 	private static final String BASE_DIR = "e:\\_work\\java\\blog-for-prog\\";
 	private static ProxyManager proxyManager = new ProxyManager();
+
 	public static void main(String[] args) throws IOException {
 
 		List<Article> articles = new ArrayList<>();
@@ -32,14 +36,12 @@ public class BlogApp {
 			sb.append("\r\n");
 			// extract Article info
 			article.downloadAndFillContent();
-			article.getContentNodes()
-			    .stream()
-			    .forEach(node -> translateNode(node, article));
-			
-			
+			article.getContentNodes().stream().forEach(node -> translateNode(node, article));
+			article.setTranslatedTitle(translateText(article.getTitle()));
+			article.setDetailedTitle(translateText(article.getDetailedTitle()));
 			try {
 				// processArticleHeader(article, articleDoc);
-				// getAndSaveArticleContent(article, article.getArticleDoc());
+				saveArticleContent(article);
 
 			} catch (Exception e) {
 				System.out.println("Error: " + e.getMessage());
@@ -57,13 +59,35 @@ public class BlogApp {
 
 	}
 
-	private static Object translateNode(Element node, Article article) {
-	    DeeplTranslator translator = new DeeplTranslator();
-	    translator.setPoxy(proxyManager.getNext());
-        return null;
-    }
+	private static void translateNode(Element node, Article article) {
 
-    private static void getAllArticles(List<Article> articles, String pageUrl) {
+		String text = node.outerHtml().replaceAll("\"", "'");
+		if (notTranslateableNode(text))
+			return;
+
+		String translatedText = translateText(text);
+		article.addTranslatedNode(translatedText);
+	}
+
+	private static boolean notTranslateableNode(String text) {
+		return text.contains("code-block") || text.contains("highlighter") || text.contains("display:none") ;
+	}
+
+	private static String translateText(String text) {
+		DeeplTranslator translator = new DeeplTranslator();
+		String translatedText = null;
+		while (translatedText == null) {
+			try {
+				translator.setPoxy(proxyManager.getRandom());
+				translatedText = translator.translate(text);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		return translatedText;
+	}
+
+	private static void getAllArticles(List<Article> articles, String pageUrl) {
 		WebHelper webHelper = new WebHelper();
 		webHelper.get(pageUrl);
 		boolean hasNextPage = true;
@@ -75,29 +99,24 @@ public class BlogApp {
 		}
 	}
 
-	private static void getAndSaveArticleContent(Article art, Document articleDoc) throws IOException {
-		Elements content = articleDoc.getElementsByClass("post-content");
-		if (content.size() > 0) {
-			new File(BASE_DIR + art.getTitle()).mkdir();
-			Elements childrenElements = content.get(0).children();
-			int count = 0;
+	private static void saveArticleContent(Article art) throws IOException {
+		new File(BASE_DIR + art.getTitle()).mkdir();
+		int count = 0;
 
-			BufferedWriter artWriter = new BufferedWriter(
-					new FileWriter(BASE_DIR + art.getTitle() + "//article.info.txt"));
+		BufferedWriter artWriter = new BufferedWriter(new FileWriter(BASE_DIR + art.getTitle() + "//article.info.txt"));
+		// writer.write("tag="+element.outerHtml());
+		artWriter.write(art.toString());
+		artWriter.close();
+		for (String element : art.getTranslatedNodes()) {
+			BufferedWriter nodeWriter = new BufferedWriter(
+					new FileWriter(BASE_DIR + art.getTitle() + "//node" + count + ".txt"));
 			// writer.write("tag="+element.outerHtml());
-			artWriter.write(art.toString());
-			artWriter.close();
-			for (Element element : childrenElements) {
-				BufferedWriter nodeWriter = new BufferedWriter(
-						new FileWriter(BASE_DIR + art.getTitle() + "//node" + count + ".txt"));
-				// writer.write("tag="+element.outerHtml());
-				art.addNode(element);
-				nodeWriter.write(element.outerHtml());
-				nodeWriter.close();
-				count++;
-			}
-			System.out.println("Saved '" + art.getTitle() + "' content");
+			nodeWriter.write(element);
+			nodeWriter.close();
+			count++;
 		}
+		System.out.println("Saved '" + art.getTitle() + "' content");
+
 	}
 
 	private static boolean getNextPageIfExists(WebHelper webHelper, Document doc) {

@@ -5,9 +5,8 @@ import java.io.UnsupportedEncodingException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import translator.DeeplResponse;
-import translator.DeeplTranslator;
+import com.siska.blog4prog.translator.DeeplResponse;
+import com.siska.blog4prog.translator.DeeplTranslator;
 
 public class TestClass {
 

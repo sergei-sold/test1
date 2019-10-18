@@ -1,4 +1,4 @@
-package translator;
+package com.siska.blog4prog.translator;
 
 import java.util.List;
 

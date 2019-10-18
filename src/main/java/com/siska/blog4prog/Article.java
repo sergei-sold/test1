@@ -12,29 +12,55 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 public class Article {
+
+
 	@Override
 	public String toString() {
-		return "Article [title=" + title + ", href=" + href + ", detailedTitle=" + detailedTitle + ", categories="
-				+ categories + ", tags=" + tags + "]";
+		return "Article [title=" + title + ", translatedTitle=" + translatedTitle + ", href=" + href
+				+ ", detailedTitle=" + detailedTitle + ", translatedDetailedTitle=" + translatedDetailedTitle
+				+ ", categories=" + categories + ", tags=" + tags + "]";
 	}
 
 	private String title;
+	private String translatedTitle;
 	private String href;
 	private String detailedTitle;
+	private String translatedDetailedTitle;
 	private Set<String> categories = new HashSet<>();
 	private Set<String> tags = new HashSet<>();
 	private List<Element> contentNodes = new ArrayList<>();
+	private List<String> translatedNodes = new ArrayList<>();
 
-    private Document articleDoc;
+	private Document articleDoc;
 
 	public Document getArticleDoc() {
 		return articleDoc;
 	}
-    
-    public List<Element> getContentNodes() {
-        return contentNodes;
-    }
-    
+
+	public String getTranslatedTitle() {
+		return translatedTitle;
+	}
+
+	public void setTranslatedTitle(String translatedTitle) {
+		this.translatedTitle = translatedTitle;
+	}
+
+	public String getTranslatedDetailedTitle() {
+		return translatedDetailedTitle;
+	}
+
+	public List<String> getTranslatedNodes() {
+		return translatedNodes;
+	}
+
+	public void setTranslatedNodes(List<String> translatedNodes) {
+		this.translatedNodes = translatedNodes;
+	}
+
+	public List<Element> getContentNodes() {
+		return contentNodes;
+	}
+
 	public Article(String title, String href) {
 		this.title = title;
 		this.href = href;
@@ -120,6 +146,11 @@ public class Article {
 				count++;
 			}
 		}
+	}
+
+	public void addTranslatedNode(String translatedText) {
+		translatedNodes.add(translatedText);
+
 	}
 
 }
