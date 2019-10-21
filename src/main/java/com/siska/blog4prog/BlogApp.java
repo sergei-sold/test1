@@ -78,7 +78,7 @@ public class BlogApp {
 		String translatedText = null;
 		while (translatedText == null) {
 			try {
-				translator.setPoxy(proxyManager.getRandom());
+				//translator.setPoxy(proxyManager.getRandom());
 				translatedText = translator.translate(text);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
