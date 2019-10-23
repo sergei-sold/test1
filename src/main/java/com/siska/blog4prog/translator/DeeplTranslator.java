@@ -50,7 +50,7 @@ public class DeeplTranslator {
             connection.setRequestMethod("POST");
 
             String timestamp = "" + (new Date()).getTime();
-            String id = "7580002";
+            String id = "48770023";
             String json = String.format(JSON, text, timestamp, id);
             OutputStream outputStream = connection.getOutputStream();
             outputStream.write(json.getBytes());
@@ -59,8 +59,9 @@ public class DeeplTranslator {
 
             responseCode = connection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                Result value = mapper.readValue(IOUtils.toString(connection.getInputStream(), "UTF-8"), Result.class);
-                result = value.translations.get(0).beams.get(0).processedSentence;
+                DeeplResponse value = mapper.readValue(IOUtils.toString(connection.getInputStream(), "UTF-8"),
+                        DeeplResponse.class);
+                result = value.result.translations.get(0).beams.get(0).processedSentence;
             }
         } catch (Exception e) {
             LOGGER.error("Error during translation. proxy=" + proxyString, e);
