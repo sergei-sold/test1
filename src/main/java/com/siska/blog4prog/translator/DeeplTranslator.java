@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DeeplTranslator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeeplTranslator.class);
     private static final String TRANSLATOR_ENDPOINT_URL = "https://www2.deepl.com/jsonrpc";
-    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36";
+    private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36";
     String JSON = "{\r\n" + "    \"jsonrpc\": \"2.0\",\r\n" + "    \"method\": \"LMT_handle_jobs\",\r\n"
             + "    \"params\": {\r\n" + "        \"jobs\": [\r\n" + "            {\r\n"
             + "                \"kind\": \"default\",\r\n" + "                \"raw_en_sentence\": \"%s\",\r\n"
@@ -44,13 +44,13 @@ public class DeeplTranslator {
             }
             connection.setDoOutput(true);
             connection.setDoInput(true);
-            connection.setRequestProperty("User-Agent", USER_AGENT);
+            connection.setRequestProperty("user-Agent", USER_AGENT);
             connection.setRequestProperty("Content-type", "text/plain");
-            connection.setRequestProperty("Accept", "text/xml");
+            connection.setRequestProperty("accept", "text/xml");
             connection.setRequestMethod("POST");
 
             String timestamp = "" + (new Date()).getTime();
-            String id = "48770023";
+            String id = "7580090";
             String json = String.format(JSON, text, timestamp, id);
             OutputStream outputStream = connection.getOutputStream();
             outputStream.write(json.getBytes());
