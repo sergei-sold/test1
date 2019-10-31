@@ -1,9 +1,7 @@
 package com.siska.blog4prog;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
@@ -13,7 +11,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
-import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -68,25 +65,36 @@ public class BlogApp {
         String text = node.outerHtml().replaceAll("\"", "'");
         String clearedText = text;
         boolean needTranslate = true;
+
+        // nodes to ignore
         if (text.contains("code-block") || text.contains("display:none") || text.contains("bd-anchor")) {
             clearedText = "";
             needTranslate = false;
         }
 
+        // translation not needed
         if (text.contains("id='highlighter_")) {
             clearedText = node.text();
             needTranslate = false;
         }
 
+        // subTitle
         if (node.tagName().toLowerCase() == "<h2 data-id" || node.tagName().toLowerCase() == "<h3 data-id") {
-            clearedText = "<h2>" + node.text() + "</h2>";
+            int pos = node.text().indexOf(". ");
+            String subTitle = pos > 0 ? node.text().substring(pos) : node.text();
+            clearedText = "<h2>" + subTitle + "</h2>";
+
         }
 
         String translatedText = "";
-        if (clearedText != "" && needTranslate)
-            translatedText = translateText(clearedText);
+        if (clearedText != "") {
+            if (needTranslate)
+                translatedText = translateText(clearedText);
+            else
+                translatedText = clearedText;
+            article.addTranslatedNode(translatedText);
+        }
 
-        article.addTranslatedNode(translatedText);
     }
 
     private static String translateText(String text) {
