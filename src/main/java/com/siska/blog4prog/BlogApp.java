@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
@@ -65,31 +66,48 @@ public class BlogApp {
     private static void translateNode(Element node, Article article) {
 
         String text = node.outerHtml().replaceAll("\"", "'");
-        if (notTranslateableNode(text))
-            return;
+        String clearedText = text;
+        boolean needTranslate = true;
+        if (text.contains("code-block") || text.contains("display:none") || text.contains("bd-anchor")) {
+            clearedText = "";
+            needTranslate = false;
+        }
 
-        String translatedText = translateText(text);
+        if (text.contains("id='highlighter_")) {
+            clearedText = node.text();
+            needTranslate = false;
+        }
+
+        if (node.tagName().toLowerCase() == "<h2 data-id" || node.tagName().toLowerCase() == "<h3 data-id") {
+            clearedText = "<h2>" + node.text() + "</h2>";
+        }
+
+        String translatedText = "";
+        if (clearedText != "" && needTranslate)
+            translatedText = translateText(clearedText);
+
         article.addTranslatedNode(translatedText);
-    }
-
-    private static boolean notTranslateableNode(String text) {
-        return text.contains("code-block") || text.contains("highlighter") || text.contains("display:none");
     }
 
     private static String translateText(String text) {
         /*
-        YandexTranslator tr = new YandexTranslator(
-                "trnsl.1.1.20190924T110141Z.cb4dbe7d67fa1ca3.bd02b74e7e377ed47c33cbf6cb63058f1319e2cb");
+         * YandexTranslator tr = new YandexTranslator(
+         * "trnsl.1.1.20190924T110141Z.cb4dbe7d67fa1ca3.bd02b74e7e377ed47c33cbf6cb63058f1319e2cb"
+         * );
          */
         DeeplTranslator tr = new DeeplTranslator();
         String translatedText = null;
-        //while (translatedText == null) {
-        try {
-            translatedText = tr.translate(text);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+        while (translatedText == null) {
+            try {
+                translatedText = tr.translate(text);
+                if (translatedText == null) {
+                    TimeUnit.SECONDS.sleep(10);
+                }
+            } catch (UnsupportedEncodingException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
-        // }
         return translatedText;
     }
 
